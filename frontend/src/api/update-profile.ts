@@ -2,7 +2,7 @@ import { api } from "@/lib/axios";
 
 interface UpdateProfileBody {
   name: string;
-  description: string;
+  description: string | null;
 }
 
 export const updateProfile = async ({

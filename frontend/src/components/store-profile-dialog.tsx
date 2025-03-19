@@ -24,7 +24,7 @@ import { toast } from "sonner";
 
 const storeProfileSchema = z.object({
   name: z.string().min(1),
-  description: z.string(),
+  description: z.string().nullable(),
 });
 
 type StoreProfileSchema = z.infer<typeof storeProfileSchema>;
@@ -49,22 +49,44 @@ export const StoreProfileDialog = () => {
       description: managedRestaurant?.description ?? "",
     },
   });
+
+  const updateManagedRestaurantCache = ({
+    name,
+    description,
+  }: StoreProfileSchema) => {
+    const cached = queryClient.getQueryData<GetManagedRestaurnatResponse>([
+      "managed-restaurant",
+    ]);
+
+    if (cached) {
+      queryClient.setQueryData<GetManagedRestaurnatResponse>(
+        ["managed-restaurant"],
+        {
+          ...cached,
+          name,
+          description,
+        }
+      );
+    }
+    return { cached };
+  };
+
   const { mutateAsync: updateProfileFn } = useMutation({
     mutationFn: updateProfile,
-    onSuccess(_, { name, description }) {
-      const cached = queryClient.getQueryData<GetManagedRestaurnatResponse>([
-        "managed-restaurant",
-      ]);
+    /*
+    onSuccess(_, schema) {
+      updateManagedRestaurantCache(schema);
+    },
+    */
+    onMutate({ description, name }) {
+      const { cached } = updateManagedRestaurantCache({ description, name });
 
-      if (cached) {
-        queryClient.setQueryData<GetManagedRestaurnatResponse>(
-          ["managed-restaurant"],
-          {
-            ...cached,
-            name,
-            description,
-          }
-        );
+      return { previousProfile: cached };
+    },
+    onError(_, __, context) {
+      if (context?.previousProfile) {
+        const { name, description } = context.previousProfile;
+        updateManagedRestaurantCache({ name, description });
       }
     },
   });
