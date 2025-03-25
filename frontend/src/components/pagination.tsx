@@ -23,7 +23,7 @@ export const Pagination = ({
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-muted-foreground">
-        Totad de {totalCount} item(s)
+        Total de {totalCount} item(s)
       </span>
       <div className="flex items-center gap-6 lg:gap-8">
         <div className="text-sm font-medium">
